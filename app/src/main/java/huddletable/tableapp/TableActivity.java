@@ -1,18 +1,17 @@
 package huddletable.tableapp;
 
 import huddletable.tableapp.Listeners.MyOnVisibilityChangeListener;
+import huddletable.tableapp.Listeners.AddSessionListener;
+import huddletable.tableapp.Listeners.PositionListener;
 import huddletable.tableapp.util.Color;
 import huddletable.tableapp.util.Position;
 import huddletable.tableapp.util.SystemUiHider;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Application;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.firebase.client.DataSnapshot;
@@ -30,6 +29,7 @@ import java.util.Map;
  *
  * @see SystemUiHider
  */
+
 public class TableActivity extends Activity {
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -67,45 +67,40 @@ public class TableActivity extends Activity {
     private Firebase myFirebaseRef;
     private final String NEW_SESSION = "You have joined a new session called ";
     private final String SESSION = "You have joined the session called ";
-    private final String mNumOfDevicesID = "num_of_devices";
-    private final String mSessionNameID = "session_name";
+    public static final String mNumOfDevicesID = "numOfDevices";
+//    public static final String mSessionNameID = "session_name";
+    public static final String mPositionID = "position";
+    private final int TRANSPARENT = 0x00000;
     private Color mBackgroundColor;
     private String mSessionName;
+    private View controlsView;
+    private ImageView imageContentView;
+    private Position currentPosition;
+
+// TODO: register a listener for posisiton and add the scrolling in safari!
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_table);
-        final View controlsView = findViewById(R.id.fullscreen_content_controls);
-        final View contentView = findViewById(R.id.fullscreen_content);
+        currentPosition = new Position(0,0);
+        controlsView = findViewById(R.id.fullscreen_content_controls);
+        imageContentView = (ImageView)findViewById(R.id.view_image);
         myFirebaseRef = ((TableApplication)getApplication()).getMyFirebaseRef();
-        contentView.setBackgroundColor(Color.Blue.getColor());
         mSessionName = getIntent().getStringExtra(SessionActivity.SESSION_NAME);
+        mBackgroundColor = null;
 
-        //TODO: if the session doesnt exist in firebase make a new session ...
-        myFirebaseRef.child(mSessionNameID).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                if (snapshot.getValue() == null) {
-                    myFirebaseRef.child(mSessionNameID).setValue(mSessionName);
-                    registerDevice();
-                    createNewSessionText();
-                } else {
-                    registerDevice();
-                    createNewDeviceText();
-                }
-            }
-
-            @Override
-            public void onCancelled(FirebaseError arg0) {
-            }
-        });
-
+        /**
+         * if the session doesnt exist in firebase make a new session ...
+         */
+        Firebase ref = new Firebase("https://huddletableapp.firebaseio.com/"+mSessionName);
+        AddSessionListener addSessionListener = new AddSessionListener(mSessionName, myFirebaseRef, this);
+        ref.addListenerForSingleValueEvent(addSessionListener);
 
         // Set up an instance of SystemUiHider to control the system UI for
         // this activity.
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-        mSystemUiHider = SystemUiHider.getInstance(this, contentView, HIDER_FLAGS);
+        mSystemUiHider = SystemUiHider.getInstance(this, imageContentView, HIDER_FLAGS);
         mSystemUiHider.setup();
         onVisibilityChangeListener = new MyOnVisibilityChangeListener(controlsView, shortAnimTime, mSystemUiHider);
         mSystemUiHider
@@ -113,7 +108,7 @@ public class TableActivity extends Activity {
 
 
         // Set up the user interaction to manually show or hide the system UI.
-        contentView.setOnClickListener(mToggleClickListener);
+        imageContentView.setOnClickListener(mToggleClickListener);
 
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
@@ -131,54 +126,27 @@ public class TableActivity extends Activity {
         onVisibilityChangeListener.delayedHide(100);
     }
 
-    /**
-     *  finds the number of devices already registered in this session.
-     *  if its null then
-     *      set the num_of_devices = 0; and get the correct color.
-     *  else
-     *      gets the current number and sets the position of this device to be 0,0 in
-     *      firebase with the next background color
-     *      i.e if there are 1 device(red) already next color is green this will be green a
-     *          nd have an initial value and position = 0,0
-     */
-    private void registerDevice() {
-        myFirebaseRef.child(mNumOfDevicesID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Integer numOfDevices = (Integer)dataSnapshot.getValue();
-                if(numOfDevices == null) {
-                    numOfDevices = 0;
-                    myFirebaseRef.child(mNumOfDevicesID).setValue(numOfDevices);
-                } else {
-                    // if this is not the first device then sets its background color
-                    numOfDevices = numOfDevices++ % Color.values().length;
-                }
-                Map<String, Position> myPosition = new HashMap<String, Position>();
-                mBackgroundColor = Color.values()[numOfDevices];
-                myPosition.put(mBackgroundColor.name(), new Position(0,0));
-                myFirebaseRef.child(mSessionName).setValue(myPosition);
-
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
+    public void setBackgroundColor(Color backgroundColor) {
+        this.mBackgroundColor = backgroundColor;
+        imageContentView.setBackgroundColor(backgroundColor.getColor());
+    }
+    public void clearBackgroundColor() {
+        this.mBackgroundColor = null;
+        imageContentView.setBackgroundColor(TRANSPARENT);
     }
 
     /**
      *  Show when a device gets added to a session
      */
-    private void createNewDeviceText() {
-        Toast.makeText(this,SESSION+mSessionName, Toast.LENGTH_LONG);
+    public void createNewDeviceText() {
+        Toast.makeText(this, SESSION + mSessionName, Toast.LENGTH_LONG).show();
     }
 
     /**
      *  Show when a session get created
      */
-    private void createNewSessionText() {
-        Toast.makeText(this,NEW_SESSION+mSessionName, Toast.LENGTH_LONG);
+    public void createNewSessionText() {
+        Toast.makeText(this, NEW_SESSION + mSessionName, Toast.LENGTH_LONG).show();
     }
 
     /**
@@ -207,7 +175,20 @@ public class TableActivity extends Activity {
         }
     };
 
+    public void addPositionListener() {
+        Firebase myFirebaseRef = new Firebase("https://huddletableapp.firebaseio.com/"+mSessionName);
+        myFirebaseRef.child(mBackgroundColor.name()).child(mPositionID).addChildEventListener(new PositionListener());
+        myFirebaseRef.child(mBackgroundColor.name()).child(mPositionID).addValueEventListener(new ValueEventListener() {
+            //todo:scroll!!!
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
 
+            }
 
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
 
+            }
+        });
+    }
 }

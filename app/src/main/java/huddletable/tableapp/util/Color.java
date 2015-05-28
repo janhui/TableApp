@@ -16,4 +16,7 @@ public enum Color {
     public int getColor() {
         return color;
     }
+    public static int size() {
+        return values().length;
+    }
 }

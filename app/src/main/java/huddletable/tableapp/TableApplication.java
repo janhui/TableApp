@@ -13,7 +13,7 @@ public class TableApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Firebase.setAndroidContext(this);
-        Firebase myFirebaseRef = new Firebase("https://huddletableapp.firebaseio.com");
+        myFirebaseRef = new Firebase("https://huddletableapp.firebaseio.com");
     }
 
     public Firebase getMyFirebaseRef() {

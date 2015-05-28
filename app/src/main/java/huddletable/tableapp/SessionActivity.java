@@ -25,7 +25,7 @@ public class SessionActivity extends Activity {
             public void onClick(View v) {
                 Intent intent;
                 intent = new Intent(SessionActivity.this, TableActivity.class);
-                intent.putExtra(SESSION_NAME, session_name.getText());
+                intent.putExtra(SESSION_NAME, session_name.getText().toString());
                 startActivity(intent);
             }
         });
