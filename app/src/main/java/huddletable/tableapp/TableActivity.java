@@ -2,10 +2,11 @@ package huddletable.tableapp;
 
 import huddletable.tableapp.Listeners.MyOnVisibilityChangeListener;
 import huddletable.tableapp.Listeners.AddSessionListener;
-import huddletable.tableapp.Listeners.PositionListener;
+import huddletable.tableapp.Listeners.TouchImageViewListener;
 import huddletable.tableapp.util.Color;
 import huddletable.tableapp.util.Position;
 import huddletable.tableapp.util.SystemUiHider;
+import huddletable.tableapp.util.TouchImageView;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -68,16 +69,17 @@ public class TableActivity extends Activity {
     private final String NEW_SESSION = "You have joined a new session called ";
     private final String SESSION = "You have joined the session called ";
     public static final String mNumOfDevicesID = "numOfDevices";
-//    public static final String mSessionNameID = "session_name";
+    public static final String mZoomID = "zoom";
+    public static final String DELIM = "/";
     public static final String mPositionID = "position";
     private final int TRANSPARENT = 0x00000;
     private Color mBackgroundColor;
     private String mSessionName;
     private View controlsView;
-    private ImageView imageContentView;
+    private TouchImageView imageContentView;
     private Position currentPosition;
+    private TouchImageViewListener mTouchImageViewListener;
 
-// TODO: register a listener for posisiton and add the scrolling in safari!
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,11 +87,11 @@ public class TableActivity extends Activity {
         setContentView(R.layout.activity_table);
         currentPosition = new Position(0,0);
         controlsView = findViewById(R.id.fullscreen_content_controls);
-        imageContentView = (ImageView)findViewById(R.id.view_image);
+        imageContentView = (TouchImageView)findViewById(R.id.view_image);
         myFirebaseRef = ((TableApplication)getApplication()).getMyFirebaseRef();
         mSessionName = getIntent().getStringExtra(SessionActivity.SESSION_NAME);
         mBackgroundColor = null;
-
+        mTouchImageViewListener = new TouchImageViewListener(imageContentView, this);
         /**
          * if the session doesnt exist in firebase make a new session ...
          */
@@ -110,6 +112,8 @@ public class TableActivity extends Activity {
         // Set up the user interaction to manually show or hide the system UI.
         imageContentView.setOnClickListener(mToggleClickListener);
 
+        imageContentView.setOnTouchImageViewListener(mTouchImageViewListener);
+
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
@@ -128,11 +132,11 @@ public class TableActivity extends Activity {
 
     public void setBackgroundColor(Color backgroundColor) {
         this.mBackgroundColor = backgroundColor;
-        imageContentView.setBackgroundColor(backgroundColor.getColor());
+//        imageContentView.setBackgroundColor(backgroundColor.getColor());
     }
     public void clearBackgroundColor() {
-        this.mBackgroundColor = null;
-        imageContentView.setBackgroundColor(TRANSPARENT);
+//        imageContentView.setBackgroundColor(TRANSPARENT);
+        imageContentView.setImageResource(R.drawable.nature_1);
     }
 
     /**
@@ -175,14 +179,43 @@ public class TableActivity extends Activity {
         }
     };
 
-    public void addPositionListener() {
+    private void addPositionListener() {
         Firebase myFirebaseRef = new Firebase("https://huddletableapp.firebaseio.com/"+mSessionName);
-        myFirebaseRef.child(mBackgroundColor.name()).child(mPositionID).addChildEventListener(new PositionListener());
+        //TODO: del after scrolling is done
+//        myFirebaseRef.child(mBackgroundColor.name()).child(mPositionID).addChildEventListener(new PositionListener());
         myFirebaseRef.child(mBackgroundColor.name()).child(mPositionID).addValueEventListener(new ValueEventListener() {
             //todo:scroll!!!
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                clearBackgroundColor();
+            }
 
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+    }
+
+    public void updateZoom(float currentZoom) {
+        Firebase myFirebaseRef = new Firebase("https://huddletableapp.firebaseio.com/"+mSessionName);
+        String zoom = Float.toString(currentZoom);
+        myFirebaseRef.child(mZoomID).setValue(zoom);
+    }
+
+    public void addListeners() {
+        addPositionListener();
+        addZoomListener();
+    }
+
+    private void addZoomListener() {
+        Firebase myFirebaseRef = new Firebase("https://huddletableapp.firebaseio.com/"+mSessionName);
+        myFirebaseRef.child(mZoomID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String zoomDouble = (String)dataSnapshot.getValue();
+                float zoom = Float.valueOf(zoomDouble);
+                imageContentView.setZoom(zoom);
             }
 
             @Override
