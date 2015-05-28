@@ -132,11 +132,10 @@ public class TableActivity extends Activity {
 
     public void setBackgroundColor(Color backgroundColor) {
         this.mBackgroundColor = backgroundColor;
-//        imageContentView.setBackgroundColor(backgroundColor.getColor());
+        imageContentView.setBackgroundColor(backgroundColor.getColor());
     }
     public void clearBackgroundColor() {
-//        imageContentView.setBackgroundColor(TRANSPARENT);
-        imageContentView.setImageResource(R.drawable.nature_1);
+        imageContentView.setBackgroundColor(TRANSPARENT);
     }
 
     /**
@@ -182,12 +181,11 @@ public class TableActivity extends Activity {
     private void addPositionListener() {
         Firebase myFirebaseRef = new Firebase("https://huddletableapp.firebaseio.com/"+mSessionName);
         //TODO: del after scrolling is done
-//        myFirebaseRef.child(mBackgroundColor.name()).child(mPositionID).addChildEventListener(new PositionListener());
         myFirebaseRef.child(mBackgroundColor.name()).child(mPositionID).addValueEventListener(new ValueEventListener() {
             //todo:scroll!!!
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                clearBackgroundColor();
+//                clearBackgroundColor();
             }
 
             @Override
