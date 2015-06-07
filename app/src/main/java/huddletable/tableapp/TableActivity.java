@@ -131,6 +131,8 @@ public class TableActivity extends Activity {
     }
 
     public void setBackgroundColor(Color backgroundColor) {
+        //TODO:
+        backgroundColor = Color.Red;
         this.mBackgroundColor = backgroundColor;
         imageContentView.setBackgroundColor(backgroundColor.getColor());
     }
@@ -180,12 +182,20 @@ public class TableActivity extends Activity {
 
     private void addPositionListener() {
         Firebase myFirebaseRef = new Firebase("https://huddletableapp.firebaseio.com/"+mSessionName);
-        //TODO: del after scrolling is done
         myFirebaseRef.child(mBackgroundColor.name()).child(mPositionID).addValueEventListener(new ValueEventListener() {
             //todo:scroll!!!
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-//                clearBackgroundColor();
+                Map<String, Object> values = (Map<String, Object>) dataSnapshot.getValue();
+                if(values.get("x").equals(0l) && values.get("y").equals(0l)) {
+                    //do nothing
+                }else {
+                    int x = (int) (long)values.get("x");
+                    int y = (int)(long)values.get("y");
+                    currentPosition = new Position(x, y);
+                    scroll(currentPosition);
+                    clearBackgroundColor();
+                }
             }
 
             @Override
@@ -193,6 +203,10 @@ public class TableActivity extends Activity {
 
             }
         });
+    }
+
+    private void scroll(Position position) {
+        imageContentView.scrollTo(position.getX(), position.getY());
     }
 
     public void updateZoom(float currentZoom) {
