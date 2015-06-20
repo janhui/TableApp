@@ -9,6 +9,7 @@ import huddletable.tableapp.util.SystemUiHider;
 import huddletable.tableapp.util.TouchImageView;
 
 import android.app.Activity;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -68,17 +69,23 @@ public class TableActivity extends Activity {
     private Firebase myFirebaseRef;
     private final String NEW_SESSION = "You have joined a new session called ";
     private final String SESSION = "You have joined the session called ";
+
+
+    //ID Strings
     public static final String mNumOfDevicesID = "numOfDevices";
     public static final String mZoomID = "zoom";
-    public static final String DELIM = "/";
     public static final String mPositionID = "position";
+
+
     private final int TRANSPARENT = 0x00000;
+    public static final String DELIM = "/";
     private Color mBackgroundColor;
     private String mSessionName;
     private View controlsView;
     private TouchImageView imageContentView;
+    private View contentView;
     private Position currentPosition;
-    private TouchImageViewListener mTouchImageViewListener;
+//    private TouchImageViewListener mTouchImageViewListener;
 
 
     @Override
@@ -87,11 +94,11 @@ public class TableActivity extends Activity {
         setContentView(R.layout.activity_table);
         currentPosition = new Position(0,0);
         controlsView = findViewById(R.id.fullscreen_content_controls);
+//        contentView = findViewById(R.id.fullscreen_content);
         imageContentView = (TouchImageView)findViewById(R.id.view_image);
         myFirebaseRef = ((TableApplication)getApplication()).getMyFirebaseRef();
         mSessionName = getIntent().getStringExtra(SessionActivity.SESSION_NAME);
-        mBackgroundColor = null;
-        mTouchImageViewListener = new TouchImageViewListener(imageContentView, this);
+//        mTouchImageViewListener = new TouchImageViewListener(imageContentView, this);
         /**
          * if the session doesnt exist in firebase make a new session ...
          */
@@ -112,7 +119,7 @@ public class TableActivity extends Activity {
         // Set up the user interaction to manually show or hide the system UI.
         imageContentView.setOnClickListener(mToggleClickListener);
 
-        imageContentView.setOnTouchImageViewListener(mTouchImageViewListener);
+//        imageContentView.setOnTouchImageViewListener(mTouchImageViewListener);
 
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
@@ -127,17 +134,34 @@ public class TableActivity extends Activity {
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
-        onVisibilityChangeListener.delayedHide(100);
+//        onVisibilityChangeListener.delayedHide(100);
     }
 
     public void setBackgroundColor(Color backgroundColor) {
+//        todo: translatingTO - report!
         //TODO:
-        backgroundColor = Color.Red;
+//        backgroundColor = Color.Red;
         this.mBackgroundColor = backgroundColor;
+        if(backgroundColor == Color.Green) {
+            imageContentView.setImageResource(R.drawable.green);
+        }
+        else if (backgroundColor == Color.Red) {
+            imageContentView.setImageResource(R.drawable.red);
+        } else {
+            imageContentView.setImageResource(R.drawable.blue);
+        }
         imageContentView.setBackgroundColor(backgroundColor.getColor());
+//        clearBackgroundColor();
     }
     public void clearBackgroundColor() {
         imageContentView.setBackgroundColor(TRANSPARENT);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(getResources(), R.drawable.nature_1, options);
+        int imageHeight = options.outHeight;
+        int imageWidth = options.outWidth;
+        String imageType = options.outMimeType;
+        imageContentView.setImageResource(R.drawable.whereiswaldo);
     }
 
     /**
@@ -206,7 +230,7 @@ public class TableActivity extends Activity {
     }
 
     private void scroll(Position position) {
-        imageContentView.scrollTo(position.getX(), position.getY());
+//        imageContentView.scrollTo(position.getX(), position.getY());
     }
 
     public void updateZoom(float currentZoom) {
@@ -227,7 +251,7 @@ public class TableActivity extends Activity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String zoomDouble = (String)dataSnapshot.getValue();
                 float zoom = Float.valueOf(zoomDouble);
-                imageContentView.setZoom(zoom);
+//                imageContentView.setZoom(zoom);
             }
 
             @Override

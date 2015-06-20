@@ -6,12 +6,17 @@
     <!-- The primary full-screen view. This can be replaced with whatever view
          is needed to present your content, e.g. VideoView, SurfaceView,
          TextureView, etc. -->
+        <!--android:src="@drawable/nature_1"-->
     <huddletable.tableapp.util.TouchImageView
         android:id="@+id/view_image"
-        android:src="@drawable/nature_1"
         android:layout_width="match_parent"
+        android:src="@drawable/transparent"
         android:layout_height="match_parent"
         />
+        <!--<SurfaceView-->
+            <!--android:id="@+id/fullscreen_content"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent" />-->
 
     <!-- This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows. -->
