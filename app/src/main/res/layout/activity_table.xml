@@ -6,7 +6,6 @@
     <!-- The primary full-screen view. This can be replaced with whatever view
          is needed to present your content, e.g. VideoView, SurfaceView,
          TextureView, etc. -->
-        <!--android:src="@drawable/nature_1"-->
     <huddletable.tableapp.util.TouchImageView
         android:id="@+id/view_image"
         android:layout_width="match_parent"
@@ -30,9 +29,9 @@
             android:background="@color/black_overlay" android:orientation="horizontal"
             tools:ignore="UselessParent">
 
-            <Button android:id="@+id/dummy_button" style="?metaButtonBarButtonStyle"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:text="@string/reset_button" />
+            <!--<Button android:id="@+id/dummy_button" style="?metaButtonBarButtonStyle"-->
+                <!--android:layout_width="0dp" android:layout_height="wrap_content"-->
+                <!--android:layout_weight="1" android:text="@string/reset_button" />-->
 
         </LinearLayout>
     </FrameLayout>

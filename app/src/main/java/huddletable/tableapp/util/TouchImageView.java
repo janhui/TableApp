@@ -38,6 +38,13 @@ import android.widget.ImageView;
 import android.widget.OverScroller;
 import android.widget.Scroller;
 
+import com.firebase.client.Firebase;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import huddletable.tableapp.TableActivity;
+
 public class TouchImageView extends ImageView {
 	
 	private static final String DEBUG = "DEBUG";
@@ -62,6 +69,7 @@ public class TouchImageView extends ImageView {
     // saved prior to the screen rotating.
     //
 	private Matrix matrix, prevMatrix;
+    private String mSessionName;
 
     private static enum State { NONE, DRAG, ZOOM, FLING, ANIMATE_ZOOM };
     private State state;
@@ -838,8 +846,8 @@ public class TouchImageView extends ImageView {
 
 	                case MotionEvent.ACTION_MOVE:
 	                    if (state == State.DRAG) {
-	                        float deltaX = curr.x - last.x;
-	                        float deltaY = curr.y - last.y;
+	                        Float deltaX = curr.x - last.x;
+	                        Float deltaY = curr.y - last.y;
 	                        float fixTransX = getFixDragTrans(deltaX, viewWidth, getImageWidth());
 	                        float fixTransY = getFixDragTrans(deltaY, viewHeight, getImageHeight());
 	                        matrix.postTranslate(fixTransX, fixTransY);
@@ -1163,18 +1171,30 @@ public class TouchImageView extends ImageView {
         	}
 
 			if (scroller.computeScrollOffset()) {
-	        	int newX = scroller.getCurrX();
-	            int newY = scroller.getCurrY();
-	            int transX = newX - currX;
-	            int transY = newY - currY;
+                Integer newX = scroller.getCurrX();
+                Integer newY = scroller.getCurrY();
+	            Integer transX = newX - currX;
+                Integer transY = newY - currY;
 	            currX = newX;
 	            currY = newY;
-	            matrix.postTranslate(transX, transY);
-	            fixTrans();
-	            setImageMatrix(matrix);
-	            compatPostOnAnimation(this);
+                scrollToValues(transX, transY);
+
+                compatPostOnAnimation(this);
         	}
 		}
+    }
+
+    public void scrollToValues(Integer transX, Integer transY) {
+        Firebase ref = new Firebase("https://huddletableapp.firebaseio.com/"+mSessionName);
+        Map<String, String> scrollValues = new HashMap<>();
+        Map<String, Object> childrenMap = new HashMap<>();
+        scrollValues.put("x", transX.toString());
+        scrollValues.put("y", transY.toString());
+        childrenMap.put(TableActivity.mScrollId, scrollValues);
+        ref.updateChildren(childrenMap);
+        matrix.postTranslate(transX, transY);
+        fixTrans();
+        setImageMatrix(matrix);
     }
 
     @TargetApi(Build.VERSION_CODES.GINGERBREAD)
@@ -1272,5 +1292,9 @@ public class TouchImageView extends ImageView {
     	float[] n = new float[9];
     	matrix.getValues(n);
     	Log.d(DEBUG, "Scale: " + n[Matrix.MSCALE_X] + " TransX: " + n[Matrix.MTRANS_X] + " TransY: " + n[Matrix.MTRANS_Y]);
+    }
+
+    public void setSessionName(String sessionName) {
+        this.mSessionName = sessionName;
     }
 }

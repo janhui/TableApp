@@ -45,7 +45,7 @@ public class AddSessionListener implements ValueEventListener {
     public void onDataChange(DataSnapshot dataSnapshot) {
         Object value = dataSnapshot.getValue();
         int numOfDevices;
-        float zoom = 1f;
+        float zoom = 4f;
         if (value == null) {
             numOfDevices = 0;
             mBackgroundColor = Color.values()[numOfDevices];
@@ -62,9 +62,15 @@ public class AddSessionListener implements ValueEventListener {
         positionMap.put(TableActivity.mPositionID, initialPosition);
         initialMap.put(TableActivity.mZoomID, Float.toString(zoom));
         initialMap.put(TableActivity.mNumOfDevicesID, numOfDevices);
+        Map<String, String> scrollValues = new HashMap<>();
+        Map<String, Object> childrenMap = new HashMap<>();
+        scrollValues.put("x", "0");
+        scrollValues.put("y", "0");
+        childrenMap.put(TableActivity.mScrollId, scrollValues);
+
         myFirebaseRef.child(mSessionName).updateChildren(initialMap);
+        myFirebaseRef.child(mSessionName).updateChildren(childrenMap);
         // Have to add position separately
-        //TODO:Check this
         myFirebaseRef.child(mSessionName).child(mBackgroundColor.name()).setValue(positionMap);
         mTableActivity.setBackgroundColor(mBackgroundColor);
         mTableActivity.addListeners();
